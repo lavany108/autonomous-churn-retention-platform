@@ -1,0 +1,16 @@
+# Virtual Environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Mac system files
+.DS_Store
+
+# Model files
+models/*.pkl
+backend/models/*.pkl
+
+# Large datasets (optional if big)
+*.csv
