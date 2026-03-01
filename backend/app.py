@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 
+
 app = Flask(__name__)
 
 # Load model once when server starts
@@ -57,20 +58,33 @@ EXPECTED_FEATURES = [
     'TotalCharges'
 ]
 
+def get_risk_segmentation(probability):
+    if probability >= 0.80:
+        return "Critical", "Immediate retention call + 30% discount + manager escalation"
+    elif probability >= 0.60:
+        return "High", "Retention call + targeted offer"
+    elif probability >= 0.40:
+        return "Medium", "Personalized engagement email + loyalty benefits"
+    elif probability >= 0.20:
+        return "Low", "Automated check-in email"
+    else:
+        return "Very Low", "No action required"
+
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
 
     # Convert JSON to DataFrame
     input_df = pd.DataFrame([data])
-    
+
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0][1]
-
+    risk_tier, action = get_risk_segmentation(probability)
     return jsonify({
     "churn_prediction": int(prediction),
-    "churn_probability": float(probability)})
-
+    "churn_probability": float(probability),
+    "risk_tier": risk_tier,
+    "recommended_action": action})
 
 if __name__ == "__main__":
     app.run(debug=True)
