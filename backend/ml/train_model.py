@@ -1,40 +1,76 @@
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score
+import pandas as pd
 import joblib
 
-from data_preprocessing import load_and_preprocess_data
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from data_preprocessing import load_raw_data
+
 
 def train():
-    X_train, X_test, y_train, y_test = load_and_preprocess_data(
-        "../../data/telecom_churn.csv"
+    df = load_raw_data("../../data/telecom_churn.csv")
+
+    X = df.drop("Churn", axis=1)
+    y = df["Churn"].map({"No": 0, "Yes": 1})
+
+    # Identify numeric and categorical columns
+    numeric_features = ["tenure", "MonthlyCharges", "TotalCharges"]
+    categorical_features = [
+        "gender",
+        "SeniorCitizen",
+        "Partner",
+        "Dependents",
+        "PhoneService",
+        "MultipleLines",
+        "InternetService",
+        "OnlineSecurity",
+        "OnlineBackup",
+        "DeviceProtection",
+        "TechSupport",
+        "StreamingTV",
+        "StreamingMovies",
+        "Contract",
+        "PaperlessBilling",
+        "PaymentMethod"
+    ]
+
+    # Preprocessing
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", StandardScaler(), numeric_features),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_features),
+        ]
     )
 
-    models = {
-        "LogisticRegression": LogisticRegression(max_iter=1000),
-        "RandomForest": RandomForestClassifier(),
-        "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-    }
+    # Create full pipeline
+    pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", LogisticRegression(max_iter=1000))
+        ]
+    )
 
-    best_model = None
-    best_score = 0
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        preds = model.predict(X_test)
-        score = accuracy_score(y_test, preds)
-        print(f"{name} Accuracy: {score}")
+    pipeline.fit(X_train, y_train)
 
-        if score > best_score:
-            best_score = score
-            best_model = model
+    preds = pipeline.predict(X_test)
+    score = accuracy_score(y_test, preds)
 
-    joblib.dump(best_model, "/Users/lavanyasmacbookair/Documents/T69/autonomous-churn-retention-platform/models/churn_model.pkl")
-    print("Best model saved successfully!")
+    print("Pipeline Accuracy:", score)
 
-    print("Feature order used in training:")
-    print(X_train.columns.tolist())
+    joblib.dump(
+        pipeline,
+        "/Users/lavanyasmacbookair/Documents/T69/autonomous-churn-retention-platform/models/churn_model.pkl"
+    )
+
+    print("Pipeline model saved successfully!")
+
 
 if __name__ == "__main__":
     train()
