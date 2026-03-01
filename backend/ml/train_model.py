@@ -30,8 +30,11 @@ def train():
             best_score = score
             best_model = model
 
-    joblib.dump(best_model, "/Users/lavanyasmacbookair/Documents/T69/autonomous-churn-retention-platform/backend/models/churn_model.pkl")
+    joblib.dump(best_model, "/Users/lavanyasmacbookair/Documents/T69/autonomous-churn-retention-platform/models/churn_model.pkl")
     print("Best model saved successfully!")
+
+    print("Feature order used in training:")
+    print(X_train.columns.tolist())
 
 if __name__ == "__main__":
     train()
