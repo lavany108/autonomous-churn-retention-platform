@@ -3,9 +3,10 @@ import joblib
 import os
 import numpy as np
 import pandas as pd
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Load model once when server starts
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

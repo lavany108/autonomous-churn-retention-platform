@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Churn Risk Intelligence Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Customer Churn Risk Dashboard</h1>
+
+    <form id="churnForm">
+        <label>Gender:</label>
+        <select name="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+
+        <label>Tenure (months):</label>
+        <input type="number" name="tenure" required>
+
+        <label>Monthly Charges:</label>
+        <input type="number" name="MonthlyCharges" required>
+
+        <label>Total Charges:</label>
+        <input type="number" name="TotalCharges" required>
+
+        <label>Contract:</label>
+        <select name="Contract">
+            <option value="Month-to-month">Month-to-month</option>
+            <option value="One year">One year</option>
+            <option value="Two year">Two year</option>
+        </select>
+
+        <button type="submit">Analyze Risk</button>
+    </form>
+
+    <div id="result" class="result-card hidden">
+        <h2>Risk Analysis</h2>
+        <p><strong>Churn Probability:</strong> <span id="probabilityText"></span></p>
+        <p>
+        <strong>Risk Tier:</strong> 
+        <span id="riskTierBadge" class="badge">-</span>
+        </p>
+        <div class="progress-container">
+        <div id="probabilityBar" class="progress-bar"></div>
+        </div>
+        <p>
+        <strong>Recommended Action:</strong>
+        <span id="actionBox"></span>
+    </p>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
