@@ -61,7 +61,7 @@ button:hover {
 /* Probability Bar */
 .progress-container {
     width: 100%;
-    background-color: #eee;
+    background-color: #c2c0c0;
     border-radius: 10px;
     overflow: hidden;
     margin-top: 10px;

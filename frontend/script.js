@@ -59,8 +59,14 @@ document.getElementById("churnForm").addEventListener("submit", async function(e
     if (riskTier === "Very Low" || riskTier === "Low") {
         probabilityBar.style.background = "#2ecc71";
     }
+    else if(riskTier === "Low"){
+        probabilityBar.style.background = "#27ae60";
+    }
     else if (riskTier === "Medium") {
         probabilityBar.style.background = "#f39c12";
+    }
+    else if (riskTier === "High") {
+        probabilityBar.style.background = "#e67e22";
     }
     else {
         probabilityBar.style.background = "#e74c3c";
