@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Churn Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="login">
+    <header class="topbar">
+        <h1>Churn Platform</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="signup.html">Signup</a>
+        </nav>
+    </header>
+
+    <main class="centered">
+        <section class="card auth-card">
+            <h2>Login</h2>
+            <p class="muted">Access the protected dashboard and prediction routes.</p>
+            <form id="loginForm" class="stack-form">
+                <label for="email">Email</label>
+                <input id="email" type="email" required placeholder="you@example.com">
+
+                <label for="password">Password</label>
+                <input id="password" type="password" required placeholder="Your password">
+
+                <button class="btn btn-primary" type="submit">Login</button>
+            </form>
+            <p id="authMessage" class="message"></p>
+            <p class="muted">No account? <a href="signup.html">Create one</a></p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

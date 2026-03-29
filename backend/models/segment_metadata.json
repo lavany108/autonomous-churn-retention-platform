@@ -1,0 +1,34 @@
+{
+  "0": {
+    "segment_name": "Value Seekers",
+    "segment_description": "Moderate usage and pricing sensitivity; respond well to targeted pricing bundles.",
+    "avg_tenure": 19.36,
+    "avg_monthly_charges": 51.84,
+    "dominant_contract": "Month-to-month",
+    "size": 1666
+  },
+  "1": {
+    "segment_name": "High-Value Premium",
+    "segment_description": "Higher monthly spend segment; prioritize premium support and proactive retention offers.",
+    "avg_tenure": 14.85,
+    "avg_monthly_charges": 85.4,
+    "dominant_contract": "Month-to-month",
+    "size": 1822
+  },
+  "2": {
+    "segment_name": "Value Seekers",
+    "segment_description": "Moderate usage and pricing sensitivity; respond well to targeted pricing bundles.",
+    "avg_tenure": 30.91,
+    "avg_monthly_charges": 21.18,
+    "dominant_contract": "Two year",
+    "size": 1531
+  },
+  "3": {
+    "segment_name": "High-Value Premium",
+    "segment_description": "Higher monthly spend segment; prioritize premium support and proactive retention offers.",
+    "avg_tenure": 60.29,
+    "avg_monthly_charges": 90.04,
+    "dominant_contract": "Two year",
+    "size": 2013
+  }
+}

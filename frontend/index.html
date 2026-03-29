@@ -1,57 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Churn Risk Intelligence Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Churn Retention Platform</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-page="landing">
+    <header class="topbar">
+        <h1>Autonomous Churn Retention Platform</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="signup.html">Signup</a>
+            <a href="dashboard.html">Dashboard</a>
+        </nav>
+    </header>
 
-<div class="container">
-    <h1>Customer Churn Risk Dashboard</h1>
-
-    <form id="churnForm">
-        <label>Gender:</label>
-        <select name="gender">
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-        </select>
-
-        <label>Tenure (months):</label>
-        <input type="number" name="tenure" required>
-
-        <label>Monthly Charges:</label>
-        <input type="number" name="MonthlyCharges" required>
-
-        <label>Total Charges:</label>
-        <input type="number" name="TotalCharges" required>
-
-        <label>Contract:</label>
-        <select name="Contract">
-            <option value="Month-to-month">Month-to-month</option>
-            <option value="One year">One year</option>
-            <option value="Two year">Two year</option>
-        </select>
-
-        <button type="submit">Analyze Risk</button>
-    </form>
-
-    <div id="result" class="result-card hidden">
-        <h2>Risk Analysis</h2>
-        <p><strong>Churn Probability:</strong> <span id="probabilityText"></span></p>
-        <p>
-        <strong>Risk Tier:</strong> 
-        <span id="riskTierBadge" class="badge">-</span>
-        </p>
-        <div class="progress-container">
-        <div id="probabilityBar" class="progress-bar"></div>
-        </div>
-        <p>
-        <strong>Recommended Action:</strong>
-        <span id="actionBox"></span>
-    </p>
-    </div>
-</div>
-
-<script src="script.js"></script>
+    <main class="hero">
+        <section>
+            <p class="eyebrow">Predict. Segment. Retain.</p>
+            <h2>Turn churn risk into retention action with secure, model-backed intelligence.</h2>
+            <p>
+                This full-stack Flask application combines authentication, protected prediction APIs,
+                and a route-based dashboard experience for practical churn operations.
+            </p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="signup.html">Create Account</a>
+                <a class="btn btn-outline" href="login.html">Login</a>
+            </div>
+        </section>
+        <aside class="card stats">
+            <h3>What You Get</h3>
+            <ul>
+                <li>JWT-secured authentication</li>
+                <li>Database-backed users</li>
+                <li>Protected dashboard APIs</li>
+                <li>Risk-tier and action recommendations</li>
+                <li>Multi-page routing with Flask</li>
+            </ul>
+        </aside>
+    </main>
 </body>
 </html>

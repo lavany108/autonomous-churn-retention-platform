@@ -1,91 +1,43 @@
-from flask import Flask, request, jsonify
-import joblib
+from flask import Flask, jsonify
 import os
-import numpy as np
-import pandas as pd
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
-app = Flask(__name__)
+from models.user_model import db
+from routes.auth_routes import auth
+from routes.dashboard_routes import dashboard
+from routes.page_routes import pages
+
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+
+# Config
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///database.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key")
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_COOKIE_SECURE"] = False
+app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+
+# Init
+db.init_app(app)
+JWTManager(app)
 CORS(app)
 
-# Load model once when server starts
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../"))
-MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "churn_model.pkl")
+# Register routes
+app.register_blueprint(auth, url_prefix="/auth")
+app.register_blueprint(dashboard, url_prefix="/api")
+app.register_blueprint(pages)
 
-model = joblib.load(MODEL_PATH)
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
 
+# Create DB
+with app.app_context():
+    db.create_all()
 
-@app.route("/")
-def home():
-    return jsonify({"message": "Churn Prediction API running 🏃‍♀️"})
-
-
-# @app.route("/predict", methods=["POST"])
-# def predict():
-
-#     data = request.json
-
-#     # Convert JSON input into numpy array
-#     features = np.array([list(data.values())])
-
-#     prediction = model.predict(features)[0]
-#     probability = model.predict_proba(features)[0][1]
-
-#     return jsonify({
-#         "churn_prediction": int(prediction),
-#         "churn_probability": float(probability)
-#     })
-
-EXPECTED_FEATURES = [
-    'gender',
-    'SeniorCitizen',
-    'Partner',
-    'Dependents',
-    'tenure',
-    'PhoneService',
-    'MultipleLines',
-    'InternetService',
-    'OnlineSecurity',
-    'OnlineBackup',
-    'DeviceProtection',
-    'TechSupport',
-    'StreamingTV',
-    'StreamingMovies',
-    'Contract',
-    'PaperlessBilling',
-    'PaymentMethod',
-    'MonthlyCharges',
-    'TotalCharges'
-]
-
-def get_risk_segmentation(probability):
-    if probability >= 0.80:
-        return "Critical", "Immediate retention call + 30% discount + manager escalation"
-    elif probability >= 0.60:
-        return "High", "Retention call + targeted offer"
-    elif probability >= 0.40:
-        return "Medium", "Personalized engagement email + loyalty benefits"
-    elif probability >= 0.20:
-        return "Low", "Automated check-in email"
-    else:
-        return "Very Low", "No action required"
-
-@app.route("/predict", methods=["POST"])
-def predict():
-    data = request.get_json()
-
-    # Convert JSON to DataFrame
-    input_df = pd.DataFrame([data])
-
-    prediction = model.predict(input_df)[0]
-    probability = model.predict_proba(input_df)[0][1]
-    risk_tier, action = get_risk_segmentation(probability)
-    return jsonify({
-    "churn_prediction": int(prediction),
-    "churn_probability": float(probability),
-    "risk_tier": risk_tier,
-    "recommended_action": action})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=int(os.getenv("PORT", "5001")))

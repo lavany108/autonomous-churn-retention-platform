@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup | Churn Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="signup">
+    <header class="topbar">
+        <h1>Churn Platform</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <main class="centered">
+        <section class="card auth-card">
+            <h2>Create Account</h2>
+            <p class="muted">Sign up to use secure churn prediction endpoints.</p>
+            <form id="signupForm" class="stack-form">
+                <label for="name">Name</label>
+                <input id="name" type="text" required placeholder="Your name">
+
+                <label for="email">Email</label>
+                <input id="email" type="email" required placeholder="you@example.com">
+
+                <label for="password">Password</label>
+                <input id="password" type="password" required minlength="6" placeholder="Minimum 6 characters">
+
+                <button class="btn btn-primary" type="submit">Signup</button>
+            </form>
+            <p id="authMessage" class="message"></p>
+            <p class="muted">Already registered? <a href="login.html">Login</a></p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
