@@ -11,7 +11,7 @@ from data_preprocessing import load_raw_data
 
 
 def train():
-    df = load_raw_data("../../data/telecom_churn.csv")
+    df = load_raw_data("../../data/dataset.csv")
 
     X = df.drop("Churn", axis=1)
     y = df["Churn"].map({"No": 0, "Yes": 1})
