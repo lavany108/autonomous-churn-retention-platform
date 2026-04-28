@@ -23,7 +23,7 @@ app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 # Init
 db.init_app(app)
 JWTManager(app)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Register routes
 app.register_blueprint(auth, url_prefix="/auth")

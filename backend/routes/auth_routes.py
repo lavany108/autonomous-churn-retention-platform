@@ -6,6 +6,11 @@ import os
 
 auth = Blueprint("auth", __name__)
 
+
+def _business_emails():
+    raw = os.getenv("BUSINESS_EMAILS", "")
+    return {email.strip().lower() for email in raw.split(",") if email.strip()}
+
 @auth.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json(silent=True) or {}
@@ -19,8 +24,15 @@ def signup():
         return jsonify({"msg": "User already exists"}), 400
 
     hashed_password = generate_password_hash(data["password"])
+    normalized_email = data["email"].strip().lower()
     admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
-    user_role = "admin" if admin_email and data["email"].strip().lower() == admin_email else "user"
+
+    if admin_email and normalized_email == admin_email:
+        user_role = "admin"
+    elif normalized_email in _business_emails():
+        user_role = "business"
+    else:
+        user_role = "user"
 
     user = User(
         name=data["name"],
@@ -45,10 +57,13 @@ def login():
     user = User.query.filter_by(email=data["email"]).first()
 
     if user and check_password_hash(user.password, data["password"]):
-        token = create_access_token(identity={
-            "id": user.id,
-            "role": user.role
-        })
+        token = create_access_token(
+            identity=str(user.id),
+            additional_claims={
+                "role": user.role,
+                "name": user.name,
+            },
+        )
         response = jsonify({"token": token})
         set_access_cookies(response, token)
         return response

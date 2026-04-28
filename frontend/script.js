@@ -9,9 +9,10 @@ const API_BASE_CANDIDATES = [
 ];
 const USE_STATIC_PAGE_URLS = IS_FILE_PROTOCOL || window.location.pathname.endsWith(".html");
 let RESOLVED_BASE_URL = null;
+let LAST_BACKEND_ERROR = "";
 
 function getCredentialsMode() {
-  return USE_STATIC_PAGE_URLS ? "omit" : "include";
+  return "include";
 }
 
 function withTimeout(ms) {
@@ -35,6 +36,15 @@ async function probeBaseUrl(baseUrl) {
   }
 }
 
+function getCandidateBaseUrls() {
+  const manualBase = localStorage.getItem("apiBaseUrl");
+  return manualBase ? [manualBase, ...API_BASE_CANDIDATES] : API_BASE_CANDIDATES;
+}
+
+function dedupeUrls(urls) {
+  return [...new Set(urls)];
+}
+
 async function getBaseUrl() {
   if (RESOLVED_BASE_URL) {
     return RESOLVED_BASE_URL;
@@ -45,8 +55,7 @@ async function getBaseUrl() {
     return RESOLVED_BASE_URL;
   }
 
-  const manualBase = localStorage.getItem("apiBaseUrl");
-  const candidates = manualBase ? [manualBase, ...API_BASE_CANDIDATES] : API_BASE_CANDIDATES;
+  const candidates = dedupeUrls(getCandidateBaseUrls());
 
   for (const candidate of candidates) {
     // Use the first healthy backend to avoid hardcoded port mismatches.
@@ -57,13 +66,36 @@ async function getBaseUrl() {
     }
   }
 
-  RESOLVED_BASE_URL = manualBase || API_BASE_CANDIDATES[0];
+  RESOLVED_BASE_URL = candidates[0];
   return RESOLVED_BASE_URL;
 }
 
 async function apiFetch(path, options = {}) {
   const baseUrl = await getBaseUrl();
-  return fetch(`${baseUrl}${path}`, options);
+
+  try {
+    return await fetch(`${baseUrl}${path}`, options);
+  } catch (error) {
+    LAST_BACKEND_ERROR = `Primary backend failed: ${baseUrl}`;
+
+    if (!USE_STATIC_PAGE_URLS) {
+      throw error;
+    }
+
+    // Retry using the next healthy local candidate if static mode is being used.
+    const retryCandidates = dedupeUrls(getCandidateBaseUrls()).filter((candidate) => candidate !== baseUrl);
+    for (const candidate of retryCandidates) {
+      if (!(await probeBaseUrl(candidate))) {
+        continue;
+      }
+
+      RESOLVED_BASE_URL = candidate;
+      localStorage.setItem("apiBaseUrl", candidate);
+      return fetch(`${candidate}${path}`, options);
+    }
+
+    throw error;
+  }
 }
 
 function getPageUrl(pageName) {
@@ -106,6 +138,21 @@ function setMessage(id, message, isError = false) {
   el.style.color = isError ? "#cc1f1a" : "#0c6f4f";
 }
 
+async function updateBackendStatus() {
+  const statusEl = document.getElementById("backendStatus");
+  if (!statusEl) {
+    return;
+  }
+
+  const url = await getBaseUrl();
+  const healthy = await probeBaseUrl(url);
+  const note = LAST_BACKEND_ERROR ? ` | ${LAST_BACKEND_ERROR}` : "";
+  statusEl.textContent = healthy
+    ? `Backend connected: ${url}`
+    : `Backend unavailable: ${url}${note}`;
+  statusEl.style.color = healthy ? "#0c6f4f" : "#cc1f1a";
+}
+
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -146,6 +193,7 @@ async function handleSignup(event) {
     }, 800);
   } catch (error) {
     setMessage("authMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
   }
 }
 
@@ -174,6 +222,7 @@ async function handleLogin(event) {
     window.location.href = getPageUrl("dashboard");
   } catch (error) {
     setMessage("authMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
   }
 }
 
@@ -187,12 +236,14 @@ async function loadDashboardHeader() {
       credentials: getCredentialsMode(),
     });
 
+    const data = await parseResponse(response);
+
     if (!response.ok) {
       if (response.status === 403) {
-        setMessage("dashboardMessage", "Admins only. Please login with an admin account.", true);
+        setMessage("dashboardMessage", data.msg || "Dashboard is available to business users only.", true);
         setTimeout(() => {
           window.location.href = getPageUrl("index");
-        }, 1000);
+        }, 1200);
         return false;
       }
 
@@ -201,11 +252,11 @@ async function loadDashboardHeader() {
       return false;
     }
 
-    const data = await parseResponse(response);
-    setMessage("dashboardMessage", `Welcome, user id ${data.user.id} (${data.user.role})`);
+    setMessage("dashboardMessage", `Welcome, ${data.user.name}!`);
     return true;
   } catch (error) {
     setMessage("dashboardMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
     return false;
   }
 }
@@ -224,10 +275,10 @@ async function loadSegmentsSummary() {
 
     if (!response.ok) {
       if (response.status === 403) {
-        setMessage("segmentsMessage", "Admins only. Please login with an admin account.", true);
+        setMessage("segmentsMessage", data.msg || "Dashboard is available to business users only.", true);
         setTimeout(() => {
           window.location.href = getPageUrl("index");
-        }, 1000);
+        }, 1200);
         return false;
       }
 
@@ -239,6 +290,7 @@ async function loadSegmentsSummary() {
     return true;
   } catch (error) {
     setMessage("segmentsMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
     return false;
   }
 }
@@ -317,11 +369,17 @@ async function handlePredict(event) {
 
     result = await parseResponse(response);
     if (!response.ok) {
+      if (response.status === 403) {
+        setMessage("dashboardMessage", result.msg || "Dashboard is available to business users only.", true);
+        return;
+      }
+
       setMessage("dashboardMessage", result.msg || "Prediction failed", true);
       return;
     }
   } catch (error) {
     setMessage("dashboardMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
     return;
   }
 
@@ -338,11 +396,17 @@ async function handlePredict(event) {
 
     segmentResult = await parseResponse(segmentResponse);
     if (!segmentResponse.ok) {
+      if (segmentResponse.status === 403) {
+        setMessage("dashboardMessage", segmentResult.msg || "Dashboard is available to business users only.", true);
+        return;
+      }
+
       setMessage("dashboardMessage", segmentResult.msg || "Segmentation failed", true);
       return;
     }
   } catch (error) {
     setMessage("dashboardMessage", "Cannot reach backend. Start Flask and check /health.", true);
+    updateBackendStatus();
     return;
   }
 
@@ -392,6 +456,17 @@ async function setupPage() {
     }
 
     document.getElementById("dashboardMain").classList.remove("hidden");
+    await updateBackendStatus();
+
+    const reconnectBtn = document.getElementById("reconnectBtn");
+    if (reconnectBtn) {
+      reconnectBtn.addEventListener("click", async () => {
+        RESOLVED_BASE_URL = null;
+        LAST_BACKEND_ERROR = "";
+        await updateBackendStatus();
+      });
+    }
+
     const isAuthorized = await loadDashboardHeader();
     if (!isAuthorized) {
       return;

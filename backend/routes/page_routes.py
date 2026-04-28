@@ -1,10 +1,18 @@
 from flask import Blueprint, send_from_directory, redirect
 import os
-from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 
 pages = Blueprint("pages", __name__)
+ALLOWED_DASHBOARD_ROLES = {"admin", "business"}
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+
+
+def _current_user_role():
+    try:
+        return get_jwt().get("role")
+    except Exception:
+        return None
 
 
 @pages.route("/")
@@ -29,11 +37,11 @@ def dashboard_page():
     except Exception:
         return redirect("/login")
 
-    user = get_jwt_identity()
-    if not user:
+    user_id = get_jwt_identity()
+    if not user_id:
         return redirect("/login")
 
-    if user.get("role") != "admin":
+    if _current_user_role() not in ALLOWED_DASHBOARD_ROLES:
         return redirect("/")
 
     return send_from_directory(FRONTEND_DIR, "dashboard.html")
@@ -46,11 +54,11 @@ def segments_page():
     except Exception:
         return redirect("/login")
 
-    user = get_jwt_identity()
-    if not user:
+    user_id = get_jwt_identity()
+    if not user_id:
         return redirect("/login")
 
-    if user.get("role") != "admin":
+    if _current_user_role() not in ALLOWED_DASHBOARD_ROLES:
         return redirect("/")
 
     return send_from_directory(FRONTEND_DIR, "segments.html")

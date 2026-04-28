@@ -153,6 +153,11 @@ body {
     min-height: 1.2rem;
 }
 
+#reconnectBtn {
+    margin-top: 0.2rem;
+    margin-bottom: 0.6rem;
+}
+
 .dashboard-layout {
     max-width: 1080px;
     margin: 0 auto;
