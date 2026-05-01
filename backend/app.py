@@ -3,10 +3,10 @@ import os
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from models.user_model import db
-from routes.auth_routes import auth
-from routes.dashboard_routes import dashboard
-from routes.page_routes import pages
+from backend.models.user_model import db
+from backend.routes.auth_routes import auth
+from backend.routes.dashboard_routes import dashboard
+from backend.routes.page_routes import pages
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
